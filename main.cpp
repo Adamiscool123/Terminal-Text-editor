@@ -35,8 +35,6 @@ void Commands::i(std::fstream& file)
     std::string line;                // scratch line buffer
 
     int count = 0;               // number of lines printed
-    int y = 0;                   // cursor row (ncurses uses y first)
-    int x = 0;                   // cursor column
 
     // rewind the passed-in stream to beginning (caller should also clear flags)
     // note: if EOF/fail flags are set, seekg alone won’t work; caller clears()
@@ -58,65 +56,60 @@ void Commands::i(std::fstream& file)
         count++;                                   // increment printed count
     }
 
+    int y = 0;
+    int x = 0;
+    int maxY, maxX;
+    getmaxyx(stdscr, maxY, maxX);
+
     move(y, x);            // position cursor at (row=y, col=x)
-    refresh();             // make the cursor position visible
+    refresh();  
 
-    int numlines = count;          // total lines printed
-    int numrow   = lines.size();   // same as numlines; name kept as in your code
-
-    // key handling loop (arrow keys to move the cursor)
-    while (true)
-    {
-        int keys = getch();        // read one key (requires keypad + cbreak)
-
-        if (keys == KEY_UP)
-        {
-            if (y == 0)
-            {
-                // at top; do nothing
-            }
-            else
-            {
-                y--;               // move cursor one row up
+    while (true) {
+        int key = getch();
+        if (key == KEY_UP) {
+            if (y > 0) {
+                y--;
+                if (x > (int)lines[y].size() - 1) {
+                    x = lines[y].size() ? lines[y].size() - 1 : 0;
+                }
             }
         }
-        else if (keys == KEY_DOWN)
-        {
-            if (y == numrow)
-            {
-                // at bottom; do nothing (note: off-by-one risk if 0-based)
-            }
-            else
-            {
-                y++;               // move cursor one row down
+        else if (key == KEY_DOWN) {
+            if (y + 1 < (int)lines.size() && y + 1 < maxY) {
+                y++;
+                if (x > (int)lines[y].size() - 1) {
+                    x = lines[y].size() ? lines[y].size() - 1 : 0;
+                }
             }
         }
-        else if (keys == KEY_RIGHT)
-        {
-            if (x == numlines)
-            {
-                // at right boundary by your metric; do nothing
-                // (note: typically bound by line length, not number of lines)
-            }
-            else
-            {
-                x++;               // move cursor one column right
+        else if (key == KEY_LEFT) {
+            if (x > 0) {
+                x--;
             }
         }
-        else if (keys == KEY_LEFT)
-        {
-            if (x == 0)
-            {
-                // at left edge; do nothing
+        else if (key == KEY_RIGHT) {
+            if (x + 1 < (int)lines[y].size() && x + 1 < maxX) {
+                x++;
             }
-            else
-            {
-                x--;               // move cursor one column left
+        }
+        else{
+            char buf[300];
+
+            while(true){
+                echo();
+
+                getstr(buf);
+
+                std::string userInput = buf;
+                
+                mvprintw(y+1, x, "%s", userInput.c_str());
+                
+                refresh();
             }
         }
 
-        move(y, x);                // apply new cursor position
-        refresh();                 // update the physical screen
+        move(y, x);
+        refresh();
     }
 }
 
@@ -220,6 +213,8 @@ void Setup::edit()
     }
 
     noecho();                      // stop echoing typed keys for command mode
+
+    char letter;
 
     // command loop: waits for ":" then a command char (q/i/v)
     while (true){
