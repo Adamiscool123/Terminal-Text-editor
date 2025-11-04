@@ -13,7 +13,8 @@ public:
 
     void setup();                // draw main menu and read choice
     void state();                // branch based on choice
-    void edit();                 // view file and await :commands
+    void modes();                 // view file and await :commands
+    void openfile();
 };
 
 #endif //_SETUP_H_

@@ -29,51 +29,53 @@ void Setup::setup()
     state();                       // handle the selected option
 }
 
+void Setup::openfile(){
+    clear();
+
+    int checker = 0;           // loop until a valid file path is provided
+    char buff[300];            // buffer for path via scanw("%s", ...)
+
+    printw("File Path: ");
+    refresh();
+
+    scanw("%s", buff);         // read path (stops at whitespace)
+    file_path = buff;
+
+    std::ifstream file;        // used only to test open success
+
+    while (checker == 0)
+    {
+        file.open(file_path, std::ios::in);  // try opening for read
+
+        if (!file)
+        {
+            // open failed: prompt again
+            clear();
+            printw("Could not open file\n\n");
+            printw("Please try again: ");
+            refresh();
+
+            scanw("%s", buff);
+            
+            file_path = buff;
+
+            file.clear();      // reset flags before next open attempt
+        }
+        else
+        {
+            checker = 1;       // success
+            file.clear();      // clear flags (not strictly needed here)
+        }
+    }
+
+    file.close();              // close test stream
+}
+
 void Setup::state()
 {
     if (choice == 1)
     {
-        clear();
-
-        int checker = 0;           // loop until a valid file path is provided
-        char buff[300];            // buffer for path via scanw("%s", ...)
-
-        printw("File Path: ");
-        refresh();
-
-        scanw("%s", buff);         // read path (stops at whitespace)
-        file_path = buff;
-
-        std::ifstream file;        // used only to test open success
-
-        while (checker == 0)
-        {
-            file.open(file_path, std::ios::in);  // try opening for read
-
-            if (!file)
-            {
-                // open failed: prompt again
-                clear();
-                printw("Could not open file\n\n");
-                printw("Please try again: ");
-                refresh();
-
-                scanw("%s", buff);
-                
-                file_path = buff;
-
-                file.clear();      // reset flags before next open attempt
-            }
-            else
-            {
-                checker = 1;       // success
-                file.clear();      // clear flags (not strictly needed here)
-            }
-        }
-
-        file.close();              // close test stream
-
-        edit();                    // proceed to viewer/command loop
+        modes();                    // proceed to viewer/command loop
     }
     else if (choice == 2)
     {
@@ -89,7 +91,7 @@ void Setup::state()
     }
 }
 
-void Setup::edit()
+void Setup::modes()
 {
     clear();
 
@@ -132,7 +134,7 @@ void Setup::edit()
                 second_file.clear();                 // clear EOF/fail flags
                 second_file.seekg(0, std::ios::beg); // rewind to start
 
-                l.i(second_file);                    // enter insert-mode handler
+                l.insert(second_file);                    // enter insert-mode handler
             }
             else if (ch == ':')
             {

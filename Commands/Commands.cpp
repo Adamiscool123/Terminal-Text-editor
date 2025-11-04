@@ -12,7 +12,57 @@
 
 #include "Commands.h"
 
-void Commands::i(std::fstream& file)
+void Commands::keyup(std::vector<std::string> lines, int &y, int &x){
+    if (y > 0) {
+        y--;
+        
+        //Check if x is bigger than lines[y] size
+        if (x > (int)lines[y].size() - 1) {
+            //check if lines[y] size is bigger than 0 (has things in the line)
+            if (lines[y].size() > 0) {
+                //if so then set x = lines[y] size
+                x = (int)lines[y].size() - 1;
+            //if there is nothing in row y then set x = 0 for row y
+            } else {
+                x = 0;
+            }
+        }
+    }
+}
+
+void Commands::keydown(std::vector<std::string> lines, int &y, int &x, int maxY){
+    if (y + 1 < (int)lines.size() && y + 1 < maxY) {
+        y++;
+        
+        //Check if x is bigger than lines[y] size
+        if (x > (int)lines[y].size() - 1) {
+            //check if lines[y] size is bigger than 0 (has things in the line)
+            if (lines[y].size() > 0) {
+                //if so then set x = lines[y] size
+                x = (int)lines[y].size() - 1;
+            //if there is nothing in row y then set x = 0 for row y
+            } else {
+                x = 0;
+            }
+        }
+    }
+}
+
+void Commands::writing(std::fstream& file, int position, char* buf){
+    echo();
+    
+    getnstr(buf, sizeof(buf));
+
+    std::string userInput = buf;
+
+    file.seekp(position);
+
+    file << userInput;
+    
+    refresh();
+}
+
+void Commands::insert(std::fstream& file)
 {
     clear();                     // ncurses: clear the screen buffer
 
@@ -64,39 +114,11 @@ void Commands::i(std::fstream& file)
 
         //Capture arrow key up
         if (key == KEY_UP) {
-            if (y > 0) {
-                y--;
-                
-                //Check if x is bigger than lines[y] size
-                if (x > (int)lines[y].size() - 1) {
-                    //check if lines[y] size is bigger than 0 (has things in the line)
-                    if (lines[y].size() > 0) {
-                        //if so then set x = lines[y] size
-                        x = (int)lines[y].size() - 1;
-                    //if there is nothing in row y then set x = 0 for row y
-                    } else {
-                        x = 0;
-                    }
-                }
-            }
+            keyup(lines, y, x);
         }
         //Capture arrow key down
         else if (key == KEY_DOWN) {
-            if (y + 1 < (int)lines.size() && y + 1 < maxY) {
-                y++;
-                
-                //Check if x is bigger than lines[y] size
-                if (x > (int)lines[y].size() - 1) {
-                    //check if lines[y] size is bigger than 0 (has things in the line)
-                    if (lines[y].size() > 0) {
-                        //if so then set x = lines[y] size
-                        x = (int)lines[y].size() - 1;
-                    //if there is nothing in row y then set x = 0 for row y
-                    } else {
-                        x = 0;
-                    }
-                }
-            }
+            keydown(lines, y, x, maxY);
         }
         //Capture arrow key left
         else if (key == KEY_LEFT) {
@@ -133,17 +155,7 @@ void Commands::i(std::fstream& file)
             refresh();
         }
         else{
-            echo();
-            
-            getnstr(buf, sizeof(buf));
-
-            std::string userInput = buf;
-
-            file.seekp(position);
-
-            file << userInput;
-            
-            refresh();
+            writing(file, position, buf);
         }
 
         move(y, x);
