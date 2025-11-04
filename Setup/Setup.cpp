@@ -75,6 +75,8 @@ void Setup::state()
 {
     if (choice == 1)
     {
+        openfile();
+
         modes();                    // proceed to viewer/command loop
     }
     else if (choice == 2)
