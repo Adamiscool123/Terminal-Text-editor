@@ -1,4 +1,9 @@
 // Implements menu flow and file-opening logic for the terminal editor.
+#ifdef _WIN32
+  #include <curses.h>    // Windows / PDCurses
+#else
+  #include <ncurses.h>   // Linux / ncurses
+#endif
 #include <iostream>      // standard I/O streams (cout/cin)
 #include <fstream>       // file streams (ifstream/ofstream/fstream)
 #include <iomanip>       // I/O manipulators (not used yet)
@@ -7,7 +12,6 @@
 #include <string>        // std::string
 #include <vector>        // std::vector
 #include <cstdlib>       // general utilities
-#include <ncurses.h>     // ncurses screen/keyboard handling
 #include <sstream>       // string streams (not used yet)
 #include "Setup.h"
 #include "Commands/Commands.h"
